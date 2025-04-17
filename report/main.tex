@@ -1,0 +1,108 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage{placeins}
+
+
+\title{Simulación de la peluquería Maripuri\\ Problema 6.13 del Libro 'Aplicando Teoría de Colas en Dirección de Operaciones' }
+\author{Marian Aguilar Tavier}
+\date{April 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+Este proyecto consiste en simular el funcionamiento de la peluquería Maripuri, durante los sábados, que es el día con mayor tráfico de clientes, como se menciona en el ejercicio 6.13 del libro 'Aplicando Teoría de Colas en Dirección de Operaciones' página 58.
+La señora Purificación es la dueña de la peluquería y a su vez es la única encargada de atender a los clientes. Atiende a sus clientes según el orden de llegada y se plantea la posibilidad de contratar a una ayudante para optimizar el funcionamiento de la peluquería. Además, por su excelente servicio, los clientes están dispuestos a esperar el tiempo que sea necesario para ser atendidos.
+
+\section{Objetivo}
+
+Con la simulación se pretende encontrar las configuraciones del sistema que permitan mejorar el funcionamiento de la peluquería en sus días de mayor concurrencia. Y corroborar si las soluciones que plantea Purificación para optimizar el funcionamiento de la peluquería son realmente efectivas.
+
+\subsection{Variables de interés}
+\textbf{Variables de entrada:}
+\begin{itemize}
+    \item Tasa de llegada de clientes.
+    \item Tiempo de servicio.
+    \item Número de servidores.
+    \item Cantidad de sillas
+\end{itemize}
+\textbf{Variables de salida:}
+\begin{itemize}
+    \item Tiempo de espera promedio.
+    \item Promedio de clientes en el sistema.
+    \item Probabilidad de no encontrar sillas.
+    \item Probabilidad de esperar más de 45 minutos en ser atendido.
+    \item Promedio de clientes que esperan fuera.
+\end{itemize}
+\textbf{Eventos:}
+En este caso hay 3 tipos de eventos: la llegada de un cliente al sistema, el cliente pasa a ser atendido por el servidor, el cliente finaliza el servicio y sale del sistema.
+
+\section{Implementación de la simulación}
+Para llevar a cabo la simulación, se define una clase Client que representa el estado de cada cliente en el sistema. Esta clase guarda información relevante como el identificador del cliente, su tiempo de llegada, el tiempo de inicio de atención, y el tiempo de salida. También permite calcular el tiempo de espera de cada cliente.
+
+Por otro lado, la clase PeluqueriaSimulation es la que recoge toda la lógica de la simulación. Por un lado, almacena los parámetros de la simulación que incluye el número de servidores, las tasas de llegada y de servicio, el tiempo de duración y el número de sillas de espera. Además de estos parámetros se almacenas las variables de estado y se crean listas para guardar el estado de la simulación en cada momento.
+
+Los clientes llegan al sistema siguiendo una distribución de Poisson. Siempre que un cliente llegue, algún servidor esté disponible y no hayan clientes en las sillas de espera el usuario pasa directamente a ser atendido. Si el usuario llega pero no hay disponibilidad en ninguno de los servidores entonces pasa a sentarse en las sillas de espera.
+
+Es importante resaltar que el problema plantea que "debido a su excelente reputación los clientes están dispuestos a esperar lo que haga falta", por lo que en este caso se asume que ningún cliente abandona la peluquería sin ser atendido, por lo que, en caso de que en cliente llegue y no haya sillas disponibles, este no se va, sino que que espera afuera de la peluqueria, o de pie hasta que una de las sillas se desocupe.
+
+Una vez que un cliente comienza a ser atendido por un servidor, se genera un tiempo de servicio con distribución exponencial. Al finalizar el servicio, el cliente abandona el sistema y se libera el servidor para atender al siguiente en espera.
+
+Todos los eventos son gestionados mediante una cola de prioridad. Al finalizar, se calculan diversas métricas como el tiempo promedio de espera, la probabilidad de que un cliente tenga que esperar fuera, y el número promedio de clientes en el sistema.
+
+El código de la simulación puede observarse de forma más detallada en el archivo simulation.ipynb.
+
+\section{Resultados y experimentación}
+Como resultado de la simulación se obtuvieron los siguientes resultados:
+\begin{itemize}
+    \item \textbf{Tiempo promedio de espera:} 22.00 ± 1.38 min 
+    \item \textbf{Probabilidad de no encontrar silla:} 19.26 ± 1.69\% 
+    \item \textbf{Probabilidad de espera >45 min:} 16.97 ± 1.70\% 
+    \item \textbf{Número promedio de clientes en el sistema:} 3.05 ± 0.14 
+    \item \textbf{Promedio de clientes esperando afuera:} 0.54 ± 0.08 
+\end{itemize}
+
+Luego de observar los resultados se puede apreciar  que el tiempo de espera promedio de un cliente en el sistema es de más de 20 minutos. De igual modo las probabilidades de no encontrar silla y esperar más de 45 minutos para ser atendido son elevadas.
+
+Por lo que se tienen las siguientes hipótesis:
+\begin{itemize}
+    \item \textbf{Aumentar la cantidad d servidores reduciría el tiempo de espera, y por consiguiente todas las variables de salida:}
+    Si se modifican los parámetros de la simulación, específicamente el número de servidores en el sistema, se observa una notable disminución en los tiempos de espera. 
+    Se realizaron análisis de sensibilidad para distintos valores de servidores, y se encontró que a medida que aumenta la capacidad de atención, el sistema se descongestiona más rápidamente. 
+    Esto no solo reduce el tiempo promedio de espera, sino también la probabilidad de encontrar todas las sillas ocupadas y la probabilidad de que un cliente espere más de 45 minutos.
+    En consecuencia, la cantidad promedio de clientes en el sistema y el número de personas esperando afuera también disminuyen significativamente.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{time_vs_servers.png}
+    \end{figure}
+    \FloatBarrier
+    Además se realizó un test de hipótesis entre los tiempos de espera en el sistema con un solo servidor en comparación con los tiempos de espera de en un sistema con 3 servidores. Y como resultado se evidenció una diferencia significativa. 
+
+    \item \textbf{Incrementar el número de sillas ayudaría a que los clientes no tengan que esperar de pie.}
+    De igual modo se ajustaron los parámetros de la simulación para distintas cantidades de sillas de espera en el sistema y se comprobó que la probabilidad asociada a no encontrar sillas disponibles disminuye considerablemente.
+    Para esto además se realizó un análisis de varianza (ANOVA) que corroboró que hay diferencias significativas en la probabilidad de sillas disponibles según la configuración del número de sillas.
+
+    \item \textbf{Un aumento en la tasa de llegada afectaría significativamnte el equilibrio del sistema:} 
+    De forma similar, para esto se modifica la tasa de llegadas y vemos como se comporta. Y se comprueba además que para ciertos valores de los parámetros del sistema, esto logra estabilizarse nuevamente.
+\end{itemize}
+
+Como los resultados obtenidos en cada una de las simulaciones pueden presentar variabilidad, se realizaron \(n\) réplicas por cada configuración evaluada y para cada una de las variables de interés se calculó un intervalo de confianza del 95\% para garantizar resultados más robustos y confiables.
+
+Se estableció un criterio de parada adaptativo para determinar el número adecuado de réplicas. Para ello se ejecutan hasta un máximo de 10\,000 simulaciones, pero el proceso se detiene antes si se alcanza la precisión deseada.
+Se calcularon intervalos de confianza del 95\% para tres métricas clave: el tiempo promedio de espera, la probabilidad de que un cliente no encuentre silla disponible, y la probabilidad de que un cliente espere más de 45 minutos. A cada paso, se evaluó si el cociente entre el ancho del intervalo y la media estimada era inferior a un margen de error preestablecido del 10\%. Cuando esta condición se cumple para todas las métricas simultáneamente, se considera que se ha alcanzado la convergencia, y se detiene la simulación.
+
+\section{Modelo Matemático}
+El modelo matemático se fundamenta en un sistema de colas, regido por el principio de que el primero en entrar es el primero en salir (FIFO).
+
+La tasa de llegada es una variable aleatoria con una distribución Poisson de media 5 clientes por hora. Luego cada servidor tiene una tasa de servicio con distribución exponencial de parámetro $\mu$ = 6 (ya que tarda 10 min por cliente lo que se traduce a 6 clientes por hora). El sistema está conformado por n servidores en paralelo.
+
+Se asume que las tasas de llegada y servicio se mantienen constantes a lo largo de toda la simulación; al igual que el número de servidores. Además, como se mencionó anteriormente, si un nuevo cliente entra en el sistema y no encuentra sillas disponibles, este no abandona la cola, sino que espera afuera hasta que una de las sillas vuelva a estar disponible nuevamente.
+
+\section{Conclusiones}
+Con la simulación de este sistema de colas, se ha logrado adquirir una mayor claridad sobre cómo funciona la peluquería de la señora Purificación. Luego de simular $n$ veces el sistema con diferentes configuraciones se ha corroborado que, para una mejor experiencia del cliente se debe incrementar el número de servidores, ya que esto se traduce en un menor tiempo promedio de espera y por consiguiente disminuye la probabilidad de que un cliente demore más de 45 minutos en ser atendido.
+
+Para evitar las colas fuera de la peluquería y reducir la probabilidad de que el usuario no encuentre sillas de espera disponibles, la dueña deberá incrementar el número de sillas de espera en el sistema.
+Con estos cambios se garantiza un mejor funcionamiento de la peluquería en los días de mayor concurrencia.
+\end{document}
